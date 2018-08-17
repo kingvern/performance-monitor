@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+{% for item in ArtiInfo %}
+{% for it in item.perDe %}
+{{ it.contractIndex }},{{ it.posToday }},{{ it.tradePnl }},
+{{ it.holdPnl }},{{ it.totalPnl }},{{ it.commission }},{{ it.margin }}
+{% endfor %}
+<hr>
+{% endfor %}
+<hr>
+
+{% for item in ArtiInfo %}
+{{ item.netValue }},
+{% endfor %}
+<hr>
+{% for item in ArtiInfo %}
+{{ item.pnl }},
+{% endfor %}
+<hr>
+
+{% for item in ArtiInfo %}
+{{ item.marginRatio }},
+{% endfor %}
+<hr>
+
+{% for item in ArtiInfo %}
+{{ item.pctChg }},
+{% endfor %}
+<hr>
+
+{% for item in ArtiInfo %}
+{{ item.netLeverage }},
+{% endfor %}
+<hr>
+
+
+</body>
+</html>

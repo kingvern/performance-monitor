@@ -1,0 +1,584 @@
+{% extends "base.html" %}
+
+{% block page %}
+<div class="row">
+    <form action="/day" method="get">
+    <div class="box">
+    <div class="col-sm-6 col-md-6 ">
+
+
+        <div class="input-group select2-bootstrap-prepend">
+
+          <span class="input-group-btn">
+            <button class="btn btn-default" type="submit"  data-select2-open="single-prepend-text" >
+              <span class="fa fa-search"></span>
+            </button>
+          </span>
+          <select id="single-prepend-text" name="q" class="form-control select2" ui-jp="select2" ui-options="{theme: 'bootstrap'}">
+            <option value="huatai"  >huatai</option>
+            <option value="xinhu"  {% ifequal q 'xinhu' %} selected = "selected"  {% endifequal %}>xinhu</option>
+          </select>
+
+        </div>
+
+        </div>
+      </div>
+
+    <div class="col-sm-6 col-md-6 ">
+<div class="form-group">
+          <div class='input-group date' ui-jp="datetimepicker" ui-options="{
+           {% if d %}
+                defaultDate: '{{ d }}',
+           {% endif %}
+                format: 'YYYY-MM-DD',
+                icons: {
+                  time: 'fa fa-clock-o',
+                  date: 'fa fa-calendar',
+                  up: 'fa fa-chevron-up',
+                  down: 'fa fa-chevron-down',
+                  previous: 'fa fa-chevron-left',
+                  next: 'fa fa-chevron-right',
+                  today: 'fa fa-screenshot',
+                  clear: 'fa fa-trash',
+                  close: 'fa fa-remove'
+                }
+              }">
+              <input type='text' class="form-control"  name="d" />
+              <span class="input-group-addon">
+                  <span class="fa fa-calendar"></span>
+              </span>
+          </div>
+</div>
+
+    </div>
+        </form>
+</div>
+
+<div class="row" >
+		<div class="col-sm-6 col-md-12">
+	        <div class="box">
+	          <div class="box-header">
+	            <h3>NetValue</h3>
+	            <small>Calculated in last 3 Months</small>
+	          </div>
+	          <div class="box-tool">
+		        <ul class="nav">
+		          <li class="nav-item inline">
+		            <a class="nav-link">
+		              <i class="material-icons md-18">&#xe863;</i>
+		            </a>
+		          </li>
+		          <li class="nav-item inline dropdown">
+		            <a class="nav-link" data-toggle="dropdown">
+		              <i class="material-icons md-18">&#xe5d4;</i>
+		            </a>
+		            <div class="dropdown-menu dropdown-menu-scale pull-right">
+		              <a class="dropdown-item" href>This week</a>
+		              <a class="dropdown-item" href>This month</a>
+		              <a class="dropdown-item" href>This week</a>
+		              <div class="dropdown-divider"></div>
+		              <a class="dropdown-item">Today</a>
+		            </div>
+		          </li>
+		        </ul>
+		      </div>
+	          <div class="box-body">
+	            <div id="netValueGraph" style="height:560px" >
+
+
+	            </div>
+
+                  <script type="text/javascript">
+	                    // 基于准备好的dom，初始化echarts实例
+        var myChart = echarts.init(document.getElementById('netValueGraph'));
+
+        // 指定图表的配置项和数据
+
+var timeData = [
+ {% for item in ArtiInfo %}
+'{{ item.date }}',
+{% endfor %}
+];
+
+option = {
+    title: {
+        textStyle:{
+            fontSize:28,},
+        text: '净值',
+        subtext: '某账号的净值',
+        x: 'center'
+    },
+    tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+            animation: true
+        }
+    },
+    legend: {
+        data:['净值'],
+        x: 'left'
+    },
+    toolbox: {
+        feature: {
+            dataZoom: {
+                yAxisIndex: 'none'
+            },
+            restore: {},
+            saveAsImage: {}
+        }
+    },
+    //右上角小工具条
+    axisPointer: {
+        link: {xAxisIndex: 'all'}
+    },
+    dataZoom: [
+        {
+            show: true,
+            type: 'slider',
+            realtime: true,
+            start: 0,
+            end: 100,
+        }
+    ],
+    grid: [{
+        left: 50,
+        right: 50
+    }],
+    xAxis : [
+        {
+            gridIndex: 0,
+            type : 'category',
+            boundaryGap : false,
+            axisLine: {onZero: true},
+            data: timeData
+        }
+    ],
+    yAxis : [
+        {
+            name : '净值',
+            type : 'value',
+            scale:'true',
+        }
+    ],
+    series : [
+        {
+            name:'净值',
+            type:'line',
+            symbolSize: 8,
+            hoverAnimation: true,
+            data:[
+{% for item in ArtiInfo %}
+'{{ item.netValue }}',
+{% endfor %}
+            ]
+        }
+    ]
+};
+
+        // 使用刚指定的配置项和数据显示图表。
+        myChart.setOption(option);
+
+      //  var ArtiInfo = {{ ArtiInfo }};
+
+        var initMoney =[ {% for item in ArtiInfo %}{{ item.netValue }},{% endfor %} ];
+        var date =[{% for item in ArtiInfo %}'{{ item.date }}',{% endfor %}];
+        var today = "";
+        {% for item in ArtiInfo %}
+        today='{{ item.date }}';
+        {% endfor %}
+
+
+        myChart.on('click', function (params) {
+    if (params.componentType === 'series') {
+    $(".detail").hide();
+    $("#"+date[params.dataIndex]).show();
+        console.log("#"+date[params.dataIndex]);
+        console.log(params.data);
+
+        $.getJSON('/add/',{'a':'xinhu','b':date[params.dataIndex]},function(ret){
+            //返回值 ret 在这里是一个列表
+           for (var i = ret.length - 1; i >= 0; i--) {
+           console.log(ret[i]['contractIndex']+' '+ret[i]['holdPnl']+' '+ret[i]['margin']+' '+ret[i]['totalPnl']);
+              // 把 ret 的每一项显示在网页上
+//alert('!');
+            };
+          })
+
+
+    }
+
+});
+
+
+$(document).ready(function(){
+  $(".detail").hide();
+  $("#"+today).show();
+});
+    </script>
+	          </div>
+	        </div>
+	    </div>
+</div>
+
+
+{% for item in ArtiInfo %}
+
+
+<div class="detail" id="{{ item.date }}">
+
+    <div class="row" >
+<div class="col-sm-18">
+      <div class="box">
+        <div class="box-header">
+          <h2>汇总</h2>
+          <small>Add the base class .table to any &lt;table>.</small>
+        </div>
+        <div class="box-divider m-a-0"></div>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Index</th>
+              <th>数额</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>初始资金/万</td>
+              <td>{{ item.initMoney }}
+              </td>
+            </tr>
+            <tr>
+              <td>保证金占用/万</td>
+              <td>
+{{ item.totalMargin }}
+              </td>
+            </tr>
+            <tr>
+              <td>保证金占用比例</td>
+              <td>
+{{ item.marginRatio }}
+              </td>
+            </tr>
+            <tr>
+              <td>商品名义金额/万</td>
+              <td>
+{{ item.notional }}
+              </td>
+            </tr>
+            <tr>
+              <td>杠杆率</td>
+              <td>
+{{ item.leverage }}
+              </td>
+            </tr>
+            <tr>
+              <td>净头寸名义金额/万</td>
+              <td>
+{{ item.netNotional }}
+              </td>
+            </tr>
+            <tr>
+              <td>净杠杆率</td>
+              <td>
+{{ item.netLeverage }}
+              </td>
+            </tr>
+            <tr>
+              <td>净头寸方向</td>
+              <td>
+{{ item.netPosDirection }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+  </div>
+</div>
+
+    <div class="row" >
+ <div class="col-sm-18">
+      <div class="box">
+        <div class="box-header">
+          <h2>汇总</h2>
+          <small>Add the base class .table to any &lt;table>.</small>
+        </div>
+        <div class="box-divider m-a-0"></div>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Index</th>
+              <th>posToday</th>
+                <th>tradePnl</th>
+                <th>holdPnl</th>
+                <th>commission</th>
+                <th>totalPnl</th>
+                <th>margin</th>
+            </tr>
+          </thead>
+          <tbody>
+{% for item_detail in item.perDe %}
+            <tr>
+              <td>
+                {{ item_detail.contractIndex }}
+              </td>
+              <td>
+                {{ item_detail.posToday }}
+              </td>
+                <td>
+                {{ item_detail.tradePnl }}
+              </td>
+                <td>
+                {{ item_detail.holdPnl }}
+              </td>
+                <td>
+                {{ item_detail.commission }}
+              </td>
+                <td>
+                {{ item_detail.totalPnl }}
+              </td>
+                <td>
+                {{ item_detail.margin }}
+              </td>
+            </tr>
+
+{% endfor %}
+
+          </tbody>
+        </table>
+      </div>
+  </div>
+</div>
+
+<div class="row" >
+		<div class="col-sm-6 col-md-12">
+	        <div class="box">
+	          <div class="box-header">
+	            <h3>Pos</h3>
+	            <small></small>
+	          </div>
+	          <div class="box-body">
+	            <div id="PosGraph_{{ item.date }}" style="height:300px" >
+
+	            </div>
+
+                  <script type="text/javascript">
+	                    // 基于准备好的dom，初始化echarts实例
+        var myChart = echarts.init(document.getElementById('PosGraph_{{ item.date }}'));
+
+        // 指定图表的配置项和数据
+
+option = {
+    xAxis: {
+        type: 'category',
+        data: [ {% for item_detail in item.posToday %}
+'{{ item_detail.contractIndex }}',
+{% endfor %} ]
+    },
+    yAxis: {
+        type: 'value'
+    },
+    series: [{
+        data: [ {% for item_detail in item.posToday %}
+'{{ item_detail.posToday }}',
+{% endfor %} ],
+        type: 'bar'
+    }]
+};
+
+        // 使用刚指定的配置项和数据显示图表。
+        myChart.setOption(option);
+
+    </script>
+	          </div>
+	        </div>
+	    </div>
+</div>
+
+<div class="row" >
+        <div class="col-sm-6 col-md-12">
+            <div class="box">
+              <div class="box-header">
+                <h3>tradePnl</h3>
+                <small></small>
+              </div>
+              <div class="box-body">
+                <div id="tradePnlGraph_{{ item.date }}" style="height:300px" >
+
+                </div>
+
+                  <script type="text/javascript">
+                        // 基于准备好的dom，初始化echarts实例
+        var myChart = echarts.init(document.getElementById('tradePnlGraph_{{ item.date }}'));
+
+        // 指定图表的配置项和数据
+
+option = {
+    xAxis: {
+        type: 'category',
+        data: [ {% for item_detail in item.tradePnl %}
+'{{ item_detail.contractIndex }}',
+{% endfor %} ]
+    },
+    yAxis: {
+        type: 'value'
+    },
+    series: [{
+        data: [ {% for item_detail in item.tradePnl %}
+'{{ item_detail.tradePnl }}',
+{% endfor %} ],
+        type: 'bar'
+    }]
+};
+
+        // 使用刚指定的配置项和数据显示图表。
+        myChart.setOption(option);
+
+    </script>
+              </div>
+            </div>
+        </div>
+</div>
+
+
+ <div class="row" >
+        <div class="col-sm-6 col-md-12">
+            <div class="box">
+              <div class="box-header">
+                <h3>margin</h3>
+                <small></small>
+              </div>
+              <div class="box-body">
+                <div id="marginGraph_{{ item.date }}" style="height:300px" >
+
+                </div>
+
+                  <script type="text/javascript">
+                        // 基于准备好的dom，初始化echarts实例
+        var myChart = echarts.init(document.getElementById('marginGraph_{{ item.date }}'));
+
+        // 指定图表的配置项和数据
+
+option = {
+    xAxis: {
+        type: 'category',
+        data: [ {% for item_detail in item.margin %}
+'{{ item_detail.contractIndex }}',
+{% endfor %} ]
+    },
+    yAxis: {
+        type: 'value'
+    },
+    series: [{
+        data: [ {% for item_detail in item.margin %}
+'{{ item_detail.margin }}',
+{% endfor %} ],
+        type: 'bar'
+    }]
+};
+
+        // 使用刚指定的配置项和数据显示图表。
+        myChart.setOption(option);
+
+    </script>
+              </div>
+            </div>
+        </div>
+</div>
+
+     <div class="row" >
+        <div class="col-sm-6 col-md-12">
+            <div class="box">
+              <div class="box-header">
+                <h3>commission</h3>
+                <small></small>
+              </div>
+              <div class="box-body">
+                <div id="commissionGraph_{{ item.date }}" style="height:300px" >
+
+                </div>
+
+                  <script type="text/javascript">
+                        // 基于准备好的dom，初始化echarts实例
+        var myChart = echarts.init(document.getElementById('commissionGraph_{{ item.date }}'));
+
+        // 指定图表的配置项和数据
+
+option = {
+    xAxis: {
+        type: 'category',
+        data: [ {% for item_detail in item.commission %}
+'{{ item_detail.contractIndex }}',
+{% endfor %} ]
+    },
+    yAxis: {
+        type: 'value'
+    },
+    series: [{
+        data: [ {% for item_detail in item.commission %}
+'{{ item_detail.commission }}',
+{% endfor %} ],
+        type: 'bar'
+    }]
+};
+
+        // 使用刚指定的配置项和数据显示图表。
+        myChart.setOption(option);
+
+    </script>
+              </div>
+            </div>
+        </div>
+</div>
+
+ <div class="row" >
+        <div class="col-sm-6 col-md-12">
+            <div class="box">
+              <div class="box-header">
+                <h3>totalPnl</h3>
+                <small></small>
+              </div>
+              <div class="box-body">
+                <div id="totalPnlGraph_{{ item.date }}" style="height:300px" >
+
+                </div>
+
+                  <script type="text/javascript">
+                        // 基于准备好的dom，初始化echarts实例
+        var myChart = echarts.init(document.getElementById('totalPnlGraph_{{ item.date }}'));
+
+        // 指定图表的配置项和数据
+
+option = {
+    xAxis: {
+        type: 'category',
+        data: [ {% for item_detail in item.totalPnl %}
+'{{ item_detail.contractIndex }}',
+{% endfor %} ]
+    },
+    yAxis: {
+        type: 'value'
+    },
+    series: [{
+        data: [ {% for item_detail in item.totalPnl %}
+'{{ item_detail.totalPnl }}',
+{% endfor %} ],
+        type: 'bar'
+    }]
+};
+
+        // 使用刚指定的配置项和数据显示图表。
+        myChart.setOption(option);
+
+    </script>
+              </div>
+            </div>
+        </div>
+</div>
+
+</div>
+{% endfor %}
+
+
+
+
+{% endblock %}

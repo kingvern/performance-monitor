@@ -1,0 +1,662 @@
+{% extends "base.html" %}
+
+{% block page %}
+<form action="/cycle" method="get">
+    <div class="row">
+    <div class="col-sm-6 col-md-12 ">
+        <div class="box">
+
+        <div class="input-group select2-bootstrap-prepend">
+
+          <span class="input-group-btn">
+            <button class="btn btn-default" type="submit"  data-select2-open="single-prepend-text" >
+              <span class="fa fa-search"></span>
+            </button>
+          </span>
+          <select id="single-prepend-text" name="q" class="form-control select2" ui-jp="select2" ui-options="{theme: 'bootstrap'}">
+            <option value="huatai">huatai</option>
+            <option value="xinhu" {% ifequal q 'xinhu' %} selected = "selected"  {% endifequal %}>xinhu</option>
+          </select>
+
+        </div>
+
+        </div>
+      </div>
+</div>
+
+    <div class="row">
+    <div class="col-sm-6 col-md-6 ">
+<div class="form-group">
+          <div class='input-group date' ui-jp="datetimepicker" ui-options="{
+            {% if start %}
+                defaultDate: '2018-01-01',
+           {% endif %}
+                format: 'YYYY-MM-DD',
+                icons: {
+                  time: 'fa fa-clock-o',
+                  date: 'fa fa-calendar',
+                  up: 'fa fa-chevron-up',
+                  down: 'fa fa-chevron-down',
+                  previous: 'fa fa-chevron-left',
+                  next: 'fa fa-chevron-right',
+                  today: 'fa fa-screenshot',
+                  clear: 'fa fa-trash',
+                  close: 'fa fa-remove'
+                }
+              }">
+              <input type='text' class="form-control" name="start"/>
+              <span class="input-group-addon">
+                  <span class="fa fa-calendar"></span>
+              </span>
+          </div>
+</div>
+    </div>
+
+        <div class="col-sm-6 col-md-6 ">
+<div class="form-group">
+          <div class='input-group date' ui-jp="datetimepicker" ui-options="{
+          {% if end %}
+                defaultDate: '2018-03-19',
+           {% endif %}
+                format: 'YYYY-MM-DD',
+                icons: {
+                  time: 'fa fa-clock-o',
+                  date: 'fa fa-calendar',
+                  up: 'fa fa-chevron-up',
+                  down: 'fa fa-chevron-down',
+                  previous: 'fa fa-chevron-left',
+                  next: 'fa fa-chevron-right',
+                  today: 'fa fa-screenshot',
+                  clear: 'fa fa-trash',
+                  close: 'fa fa-remove'
+                }
+              }">
+              <input type='text' class="form-control" name="end"/>
+              <span class="input-group-addon">
+                  <span class="fa fa-calendar"></span>
+              </span>
+          </div>
+</div>
+    </div>
+</div>
+
+    </form>
+
+
+	<div class="row" >
+		<div class="col-sm-6 col-md-12">
+	        <div class="box">
+	          <div class="box-header">
+	            <h3>NetValue</h3>
+	            <small>Calculated in last 3 Months</small>
+	          </div>
+	          <div class="box-tool">
+		        <ul class="nav">
+		          <li class="nav-item inline">
+		            <a class="nav-link">
+		              <i class="material-icons md-18">&#xe863;</i>
+		            </a>
+		          </li>
+		          <li class="nav-item inline dropdown">
+		            <a class="nav-link" data-toggle="dropdown">
+		              <i class="material-icons md-18">&#xe5d4;</i>
+		            </a>
+		            <div class="dropdown-menu dropdown-menu-scale pull-right">
+		              <a class="dropdown-item" href>This week</a>
+		              <a class="dropdown-item" href>This month</a>
+		              <a class="dropdown-item" href>This week</a>
+		              <div class="dropdown-divider"></div>
+		              <a class="dropdown-item">Today</a>
+		            </div>
+		          </li>
+		        </ul>
+		      </div>
+	          <div class="box-body">
+
+	            <div id="netValue" ui-jp="chart" ui-options="{
+
+    title: {
+        textStyle:{
+            fontSize:28,},
+        text: '各指标关系图',
+        subtext: '各指标关系图',
+        x: 'center',
+        top:'5%'
+    },
+    tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+            animation: true
+        }
+    },
+    legend: {
+        data:['净值','保证金','杠杆率','名义金额','净头寸方向'],
+        x: 'left',
+        top:'13%'
+    },
+    toolbox: {
+        feature: {
+            dataZoom: {
+               yAxisIndex: 'none'
+           },
+            restore: {},
+            saveAsImage: {}
+        }
+    },
+    axisPointer: {
+        link: {xAxisIndex: 'all'}
+    },
+    dataZoom: [
+        {
+            show: true,
+            type: 'slider',
+            realtime: true,
+            start: 0,
+            end: 100,
+            xAxisIndex: [0,1,2,3,4]
+        }
+    ],
+    grid: [{
+        left: 50,
+        right: 50,
+        top:'20%',
+        height: '10%'
+    }, {
+        left: 50,
+        right: 50,
+        top: '35%',
+        height: '10%'
+    }, {
+        left: 50,
+        right: 50,
+        top: '50%',
+        height: '10%'
+    }, {
+        left: 50,
+        right: 50,
+        top: '65%',
+        height: '10%'
+    }, {
+        left: 50,
+        right: 50,
+        top: '80%',
+        height: '10%'
+    }],
+    xAxis : [
+        {
+            gridIndex: 0,
+            type : 'category',
+            boundaryGap : false,
+            axisLine: {onZero: true},
+            data: [{% for item in ArtiInfo %}
+'{{ item.date }}',
+{% endfor %}]
+        },
+        {
+            gridIndex: 1,
+            type : 'category',
+            boundaryGap : false,
+            axisLine: {onZero: true},
+            data: [{% for item in ArtiInfo %}
+'{{ item.date }}',
+{% endfor %}]
+        },
+        {
+            gridIndex: 2,
+            type : 'category',
+            boundaryGap : false,
+            axisLine: {onZero: true},
+            data: [{% for item in ArtiInfo %}
+'{{ item.date }}',
+{% endfor %}]
+        },
+        {
+            gridIndex: 3,
+            type : 'category',
+            boundaryGap : false,
+            axisLine: {onZero: true},
+            data: [{% for item in ArtiInfo %}
+'{{ item.date }}',
+{% endfor %}]
+        },
+        {
+            gridIndex: 4,
+            type : 'category',
+            boundaryGap : false,
+            axisLine: {onZero: true},
+            data: [{% for item in ArtiInfo %}
+'{{ item.date }}',
+{% endfor %}]
+        }
+
+    ],
+    yAxis : [
+        {gridIndex: 0,
+            name : '净值',
+            type : 'value',
+            scale:'true',
+            nameGap:5
+        },
+        {
+            gridIndex: 1,
+            name : '保证金',
+            type : 'value',
+            scale:'true',
+            nameGap:5
+        },
+        {
+            gridIndex: 2,
+            name : '杠杆率',
+            type : 'value',
+            scale:'true',
+            nameGap:5
+        },
+        {
+            gridIndex: 3,
+            name : '名义金额',
+            type : 'value',
+            scale:'true',
+            nameGap:5
+        },
+        {
+            gridIndex: 4,
+            name : '净头寸方向',
+            type : 'value',
+            nameGap:5
+        }
+    ],
+    series : [
+        {
+            name:'净值',
+            type:'line',
+            symbolSize: 8,
+            xAxisIndex: 0,
+            yAxisIndex: 0,
+            hoverAnimation: false,
+            data:[
+{% for item in ArtiInfo %}
+'{{ item.netValue }}',
+{% endfor %}
+            ],
+                      markPoint : {
+                          data : [
+                              {type : 'max', name: 'Max'},
+                              {type : 'min', name: 'Min'}
+                          ]
+                      },
+                      markLine : {
+                          data : [
+                              {type : 'average', name: 'Average'}
+                          ]
+                      }
+        },
+        {
+            name:'保证金',
+            type:'line',
+            xAxisIndex: 1,
+            yAxisIndex: 1,
+            symbolSize: 8,
+            hoverAnimation: false,
+            data: [
+ {% for item in ArtiInfo %}
+'{{ item.totalMargin }}',
+{% endfor %}
+                      ],
+                      markPoint : {
+                          data : [
+                              {type : 'max', name: 'Max'},
+                              {type : 'min', name: 'Min'}
+                          ]
+                      },
+                      markLine : {
+                          data : [
+                              {type : 'average', name: 'Average'}
+                          ]
+                      }
+        },
+        {
+            name:'杠杆率',
+            type:'line',
+            xAxisIndex: 2,
+            yAxisIndex: 2,
+            symbolSize: 8,
+            hoverAnimation: false,
+            data: [
+ {% for item in ArtiInfo %}
+'{{ item.leverage }}',
+{% endfor %}
+                      ],
+                      markPoint : {
+                          data : [
+                              {type : 'max', name: 'Max'},
+                              {type : 'min', name: 'Min'}
+                          ]
+                      },
+                      markLine : {
+                          data : [
+                              {type : 'average', name: 'Average'}
+                          ]
+                      }
+        },
+        {
+            name:'名义金额',
+            type:'line',
+            xAxisIndex: 3,
+            yAxisIndex: 3,
+            symbolSize: 8,
+            hoverAnimation: false,
+            data: [
+ {% for item in ArtiInfo %}
+'{{ item.notional }}',
+{% endfor %}
+                      ],
+                      markPoint : {
+                          data : [
+                              {type : 'max', name: 'Max'},
+                              {type : 'min', name: 'Min'}
+                          ]
+                      },
+                      markLine : {
+                          data : [
+                              {type : 'average', name: 'Average'}
+                          ]
+                      }
+        },
+        {
+            name:'净头寸方向',
+            type:'line',
+            xAxisIndex: 4,
+            yAxisIndex: 4,
+            symbolSize: 8,
+            hoverAnimation: false,
+            data: [
+ {% for item in ArtiInfo %}
+'{{ item.netPosDirection }}',
+{% endfor %}
+                      ],
+                      markPoint : {
+                          data : [
+                              {type : 'max', name: 'Max'},
+                              {type : 'min', name: 'Min'}
+                          ]
+                      },
+                      markLine : {
+                          data : [
+                              {type : 'average', name: 'Average'}
+                          ]
+                      }
+        }
+    ]
+}" style="height:900px" >
+
+
+	            </div>
+
+                  <script type="text/javascript">
+    </script>
+	          </div>
+	        </div>
+	    </div>
+	</div>
+
+
+
+<p class="m-b btn-groups">
+{% for Symbol_name in symbolNameList %}
+    <button class="btn btn-fw white" id="{{ Symbol_name }}" onclick='show(this)'>{{ Symbol_name }}</button>
+{% endfor %}
+</p>
+
+
+<div class="row Symbol" id="box_btn">
+		<div class="col-sm-6 col-md-12">
+	        <div class="box">
+	          <div class="box-header">
+	            <h3>{{ Symbol.0.contractIndex }}</h3>
+	            <small>Calculated in last 3 Months</small>
+	          </div>
+	          <div class="box-body">
+	            <div id="Symbol-chart" ui-jp="chart" ui-options="{ title: {
+        textStyle:{
+            fontSize:28,},
+        text: '',
+        subtext: '',
+        x: 'center'
+    },
+    tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+            animation: true
+        }
+    },
+    legend: {
+        data:['posToday','totalPnl','margin'],
+        x: 'left'
+    },
+    toolbox: {
+        feature: {
+            dataZoom: {
+                yAxisIndex: 'none'
+            },
+            restore: {},
+            saveAsImage: {}
+        }
+    },
+    axisPointer: {
+        link: {xAxisIndex: 'all'}
+    },
+    dataZoom: [
+        {
+            show: true,
+            type: 'slider',
+            realtime: true,
+            start: 0,
+            end: 100,
+            xAxisIndex: [0,1,2]
+        }
+    ],
+    grid: [{
+        left: 50,
+        right: 50,
+        top: '15%',
+        height: '20%'
+    },
+    {
+        left: 50,
+        right: 50,
+        top: '42%',
+        height: '20%'
+    },
+    {
+        left: 50,
+        right: 50,
+        top: '69%',
+        height: '20%'
+    }],
+    xAxis : [
+        {
+            gridIndex: 0,
+            type : 'category',
+            boundaryGap : false,
+            axisLine: {onZero: true},
+            data: []
+        },
+        {
+            gridIndex: 1,
+            type : 'category',
+            boundaryGap : false,
+            axisLine: {onZero: true},
+            data: []
+        },
+        {
+            gridIndex: 2,
+            type : 'category',
+            boundaryGap : false,
+            axisLine: {onZero: true},
+            data: []
+        }
+    ],
+    yAxis : [
+        {gridIndex: 0,
+            name : 'posToday',
+            type : 'value',
+            scale:'true',
+            nameGap:5
+        },
+        {
+            gridIndex: 1,
+            name : 'totalPnl',
+            type : 'value',
+            scale:'true',
+            nameGap:5
+        },
+        {
+            gridIndex: 2,
+            name : 'margin',
+            type : 'value',
+            scale:'true',
+            nameGap:5
+        }
+    ],
+    series : [
+        {
+            name:'posToday',
+            type:'line',
+            symbolSize: 8,
+            xAxisIndex: 0,
+            yAxisIndex: 0,
+            hoverAnimation: true,
+            data:[]
+        },
+        {
+            name:'totalPnl',
+            type:'line',
+            symbolSize: 8,
+            xAxisIndex: 1,
+            yAxisIndex: 1,
+            hoverAnimation: true,
+            data:[ ]
+        },
+        {
+            name:'margin',
+            type:'line',
+            symbolSize: 8,
+            xAxisIndex: 2,
+            yAxisIndex: 2,
+            hoverAnimation: true,
+            data:[ ]
+        }
+    ]
+}" style="height:600px" >
+	            </div>
+
+                  <script type="text/javascript">
+
+             $(document).ready(function(){
+  //$(".Symbol").hide();
+});
+                  var start = '2017-12-11';
+                  var end = '2018-3-13';
+                  var account = '{{ account }}';
+
+
+
+function show(obj){
+$(".Symbol").show();
+console.log(obj.id);
+    var Symbol_name = obj.id;
+
+
+        $.getJSON("/check/",{'start':start,'end':end,'q':account,'sym':Symbol_name}, function(ret){
+              console.log(ret);
+              console.log(ret.length);
+              console.log('check');
+
+             var timeData = [];
+             var posData = [];
+             var totalPnlData = [];
+             var marginData = [];
+
+              for (var i = 0; i <= ret.length - 1; i++) {
+              timeData.push(ret[i].date);
+              posData.push(ret[i].posToday);
+              totalPnlData.push(ret[i].totalPnl);
+              marginData.push(ret[i].margin);
+              }
+
+        var myCharts = echarts.getInstanceByDom(document.getElementById('Symbol-chart'));
+        console.log(echarts.getInstanceByDom(document.getElementById('Symbol-chart')));
+        myCharts.setOption({
+        xAxis : [
+        {
+            gridIndex: 0,
+            data: timeData
+        },
+        {
+            gridIndex: 1,
+            data: timeData
+        },
+        {
+            gridIndex: 2,
+            data: timeData
+        }],
+        series : [
+        {
+            name:'posToday',
+            data:posData
+        },
+        {
+            name:'totalPnl',
+            data:totalPnlData
+        },
+        {
+            name:'margin',
+            data:marginData
+        }]
+        });
+
+        })
+
+}
+
+
+
+
+    </script>
+	          </div>
+	        </div>
+	    </div>
+</div>
+
+<div class="row" >
+<div class="col-sm-18">
+      <div class="box">
+        <div class="box-header">
+          <h2>统计</h2>
+          <small>Add the base class .table to any &lt;table>.</small>
+        </div>
+        <div class="box-divider m-a-0"></div>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>总盈余</th>
+              <th>平均盈余</th>
+                <th>夏普比率</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>{{ statistics.pnl_total}}</td>
+              <td>{{ statistics.pnl_ave}} </td>
+                <td>{{ statistics.sharp_ratio }} </td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+  </div>
+</div>
+
+
+
+{% endblock %}
